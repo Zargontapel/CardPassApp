@@ -1,0 +1,25 @@
+[
+  {
+    "name": "McDonald's Arch Card",
+
+    "formatInt": 128,
+
+    "formatValue": "ITF",
+
+    "valueType": "NUMERIC",
+
+    "valueLength": 12
+  },
+
+  {
+    "name": "Walmart Gift Card",
+
+    "formatInt": 1,
+
+    "formatValue": "Code 128",
+
+    "valueType": "ALPHANUMERIC",
+
+    "valueLength": 19
+  }
+]

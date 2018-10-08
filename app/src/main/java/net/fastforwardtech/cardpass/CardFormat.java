@@ -1,10 +1,12 @@
 package net.fastforwardtech.cardpass;
 
+import java.io.Serializable;
+
 /**
  * Created by James on 1/19/2017.
  */
 
-public class CardFormat {
+public class CardFormat implements Serializable {
 
     public String name;
     public int formatInt;

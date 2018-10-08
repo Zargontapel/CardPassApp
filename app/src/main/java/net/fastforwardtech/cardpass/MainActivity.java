@@ -25,12 +25,14 @@ import android.app.Activity;
 import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.vision.barcode.Barcode;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -48,6 +50,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private CompoundButton useFlash;
     private TextView statusMessage;
     private TextView barcodeValue;
+    private File file;
+    private LinearLayout linearLayout;
 
     private static final int RC_BARCODE_CAPTURE = 9001;
     private static final String TAG = "BarcodeMain";
@@ -66,20 +70,42 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         String FILENAME = "card_inventory";
 
+        Log.w(TAG, "Position 1");
+
+        File directory = getFilesDir();
+        file = new File(directory, FILENAME);
+        if (!file.exists())
+        {
+            Log.w(TAG, "Position 2");
+            try {
+                file.createNewFile();
+            } catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+
         FileInputStream fis;
         try {
+            Log.w(TAG, "Position 3");
             ArrayList<ScannedCard> savedCards;
             fis = openFileInput(FILENAME);
             if(fis.available() > 0) {
+                Log.w(TAG, "Position 4");
                 ObjectInputStream ois = new ObjectInputStream(fis);
                 try {
+                    Log.w(TAG, "Position 5");
                     savedCards = (ArrayList<ScannedCard>)ois.readObject();
                     ois.close();
 
+                    linearLayout = findViewById(R.id.barcode_cards);
                     for(int i = 0; i < savedCards.size(); i++)
                     {
                         ScannedCard card = savedCards.get(i);
                         Log.w(TAG, "Loaded value " + card.getValue());
+                        TextView textView = new TextView(this);
+                        textView.setText(card.name + ": " + card.getValue());
+                        linearLayout.addView(textView);
                     }
 
                 } catch (ClassNotFoundException e) {
@@ -182,36 +208,47 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                 public void onClick(DialogInterface dialog, int id) {
                                     // User clicked OK button
                                     // Add gift card to inventory
-                                    String FILENAME = "card_inventory";
                                     ScannedCard scannedCard = new ScannedCard(matchedFormat, barcode.displayValue);
 
                                     FileOutputStream fos;
                                     FileInputStream fis;
+                                    Log.w(TAG, "Position 5");
+                                    ArrayList<ScannedCard> scannedCards = new ArrayList<ScannedCard>();
                                     try {
-                                        ArrayList<ScannedCard> scannedCards;
-                                        fis = openFileInput(FILENAME);
+                                        fis = new FileInputStream(file);
+                                        Log.w(TAG, "Position 6");
                                         if(fis.available() > 0) {
+                                            Log.w(TAG, "Position 7");
                                             ObjectInputStream ois = new ObjectInputStream(fis);
                                             try {
                                                 scannedCards = (ArrayList<ScannedCard>)ois.readObject();
+                                                Log.w(TAG, "Position 8");
                                                 scannedCards.add(scannedCard);
-                                                fos = openFileOutput(FILENAME, Context.MODE_PRIVATE);
-                                                ObjectOutputStream out = new ObjectOutputStream(fos);
-                                                out.writeObject(scannedCards);
-                                                out.close();
-                                                fos.close();
 
-                                                //tell the user it was successfully saved
-                                                Context context = getApplicationContext();
-                                                CharSequence text = "Card Successfully Saved";
-                                                int duration = Toast.LENGTH_SHORT;
-
-                                                Toast toast = Toast.makeText(context, text, duration);
-                                                toast.show();
                                             } catch (ClassNotFoundException e) {
                                                 e.printStackTrace();
                                             }
                                         }
+                                        else
+                                        {
+                                            scannedCards.add(scannedCard);
+                                        }
+
+                                        fos = new FileOutputStream(file);
+                                        ObjectOutputStream out = new ObjectOutputStream(fos);
+                                        out.writeObject(scannedCards);
+                                        out.close();
+                                        fos.close();
+
+                                        Log.w(TAG, "Position 9");
+
+                                        //tell the user it was successfully saved
+                                        Context context = getApplicationContext();
+                                        CharSequence text = "Card Successfully Saved";
+                                        int duration = Toast.LENGTH_SHORT;
+
+                                        Toast toast = Toast.makeText(context, text, duration);
+                                        toast.show();
 
                                     } catch (IOException e){
                                         e.printStackTrace();

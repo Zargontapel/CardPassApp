@@ -26,6 +26,7 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.os.Bundle;
 import android.app.Activity;
+import android.support.v7.widget.CardView;
 import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
@@ -153,18 +154,31 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
                                 Bitmap bitmap = canvas.getBitmap();
 
+
                                 // scale it to 3x
                                 Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth() * 5, bitmap.getHeight() * 5, false);
 
-                                ImageView iView = new ImageView(this);
+//                                ImageView iView = new ImageView(this);
+//                                iView.setImageBitmap(resizedBitmap);
+//
+//                                cLayout.addView(iView);
+//
+//                                TextView tView = new TextView(this);
+//                                tView.setText(card.name + ": " + card.value);
+//
+//                                cLayout.addView(tView);
+
+                                CardView cView = (CardView) getLayoutInflater().inflate(R.layout.barcode_view, linearLayout, false);
+
+                                ImageView iView = cView.findViewById(R.id.card_image);
+
                                 iView.setImageBitmap(resizedBitmap);
 
-                                linearLayout.addView(iView);
+                                TextView tView = cView.findViewById(R.id.card_text);
 
-                                TextView tView = new TextView(this);
                                 tView.setText(card.name + ": " + card.value);
 
-                                linearLayout.addView(tView);
+                                linearLayout.addView(cView);
 
                                 } finally {
                             }

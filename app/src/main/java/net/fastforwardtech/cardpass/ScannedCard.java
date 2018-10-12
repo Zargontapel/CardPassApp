@@ -27,4 +27,24 @@ public class ScannedCard extends CardFormat implements Serializable{
     public void setValue(String value){
         this.value = value;
     }
+
+    public int getFormat()
+    {
+        return formatInt;
+    }
+
+    public void setFormat(int aFormat)
+    {
+        formatInt = aFormat;
+    }
+
+    public String getformatValue()
+    {
+        return formatValue;
+    }
+
+    public void setformatValue(String aFormatValue)
+    {
+        formatValue = aFormatValue;
+    }
 }

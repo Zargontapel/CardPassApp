@@ -20,11 +20,16 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.os.Bundle;
 import android.app.Activity;
 import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,6 +37,9 @@ import android.widget.Toast;
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.vision.barcode.Barcode;
 
+import net.fastforwardtech.cardpass.Graphics.AndroidCanvasProvider;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -39,7 +47,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
+
+import org.krysalis.barcode4j.impl.AbstractBarcodeBean;
+import org.krysalis.barcode4j.impl.code128.Code128Bean;
+import org.krysalis.barcode4j.impl.code39.Code39Bean;
+import org.krysalis.barcode4j.impl.datamatrix.DataMatrixBean;
+import org.krysalis.barcode4j.impl.datamatrix.SymbolShapeHint;
+import org.krysalis.barcode4j.output.bitmap.BitmapCanvasProvider;
+import org.krysalis.barcode4j.output.bitmap.BitmapEncoder;
+import org.krysalis.barcode4j.output.svg.SVGCanvasProvider;
+import org.krysalis.barcode4j.tools.UnitConv;
 
 /**
  * Main activity demonstrating how to pass extra parameters to an activity that
@@ -102,17 +122,60 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     for(int i = 0; i < savedCards.size(); i++)
                     {
                         ScannedCard card = savedCards.get(i);
-                        Log.w(TAG, "Loaded value " + card.getValue());
-                        TextView textView = new TextView(this);
-                        textView.setText(card.name + ": " + card.getValue());
-                        linearLayout.addView(textView);
-                    }
 
+                        try {
+
+                            AbstractBarcodeBean bean;
+                            switch (card.getFormat())
+                            {
+                                case 1:  // code 128
+                                    bean = new Code128Bean();
+                                    break;
+
+                                default:
+                                    Log.w(TAG, "Unrecognized card format. Aborting");
+                                    Log.w(TAG, "Format int: " + card.formatInt + ", format value: " + card.getformatValue());
+                                    Log.w(TAG, "Value: " + card.value);
+                                    return;
+                            }
+
+                            final int dpi = 200;
+
+
+                            // Configure the barcode generator
+                            bean.setModuleWidth(UnitConv.in2mm(8.0f / dpi));  // makes a dot/module exactly eight pixels
+                            bean.doQuietZone(false);
+
+                            try {
+                                AndroidCanvasProvider canvas = new AndroidCanvasProvider();
+
+                                bean.generateBarcode(canvas, card.getValue());
+
+                                Bitmap bitmap = canvas.getBitmap();
+
+                                // scale it to 3x
+                                Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth() * 5, bitmap.getHeight() * 5, false);
+
+                                ImageView iView = new ImageView(this);
+                                iView.setImageBitmap(resizedBitmap);
+
+                                linearLayout.addView(iView);
+
+                                TextView tView = new TextView(this);
+                                tView.setText(card.name + ": " + card.value);
+
+                                linearLayout.addView(tView);
+
+                                } finally {
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
                 }
             }
-
         } catch (IOException e){
             e.printStackTrace();
         }

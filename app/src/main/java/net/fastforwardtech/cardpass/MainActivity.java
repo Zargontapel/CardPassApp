@@ -55,10 +55,17 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 import org.krysalis.barcode4j.impl.AbstractBarcodeBean;
+import org.krysalis.barcode4j.impl.codabar.CodabarBean;
 import org.krysalis.barcode4j.impl.code128.Code128Bean;
 import org.krysalis.barcode4j.impl.code39.Code39Bean;
 import org.krysalis.barcode4j.impl.datamatrix.DataMatrixBean;
 import org.krysalis.barcode4j.impl.datamatrix.SymbolShapeHint;
+import org.krysalis.barcode4j.impl.int2of5.Interleaved2Of5Bean;
+import org.krysalis.barcode4j.impl.pdf417.PDF417Bean;
+import org.krysalis.barcode4j.impl.upcean.EAN13Bean;
+import org.krysalis.barcode4j.impl.upcean.EAN8Bean;
+import org.krysalis.barcode4j.impl.upcean.UPCABean;
+import org.krysalis.barcode4j.impl.upcean.UPCEBean;
 import org.krysalis.barcode4j.output.bitmap.BitmapCanvasProvider;
 import org.krysalis.barcode4j.output.bitmap.BitmapEncoder;
 import org.krysalis.barcode4j.output.svg.SVGCanvasProvider;
@@ -127,6 +134,42 @@ public class MainActivity extends Activity implements View.OnClickListener {
                             {
                                 case Barcode.CODE_128:  // code 128
                                     bean = new Code128Bean();
+                                    break;
+
+                                case Barcode.CODABAR:
+                                    bean = new CodabarBean();
+                                    break;
+
+                                case Barcode.CODE_39:
+                                    bean = new Code39Bean();
+                                    break;
+
+                                case Barcode.DATA_MATRIX:
+                                    bean = new DataMatrixBean();
+                                    break;
+
+                                case Barcode.EAN_13:
+                                    bean = new EAN13Bean();
+                                    break;
+
+                                case Barcode.EAN_8:
+                                    bean = new EAN8Bean();
+                                    break;
+
+                                case Barcode.ITF:
+                                    bean = new Interleaved2Of5Bean();
+                                    break;
+
+                                case Barcode.PDF417:
+                                    bean = new PDF417Bean();
+                                    break;
+
+                                case Barcode.UPC_A:
+                                    bean = new UPCABean();
+                                    break;
+
+                                case Barcode.UPC_E:
+                                    bean = new UPCEBean();
                                     break;
 
                                 default:

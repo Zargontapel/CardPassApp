@@ -27,9 +27,11 @@ import android.graphics.Matrix;
 import android.os.Bundle;
 import android.app.Activity;
 import android.support.v7.widget.CardView;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -91,13 +93,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         String FILENAME = "card_inventory";
 
-        Log.w(TAG, "Position 1");
-
         File directory = getFilesDir();
         file = new File(directory, FILENAME);
         if (!file.exists())
         {
-            Log.w(TAG, "Position 2");
             try {
                 file.createNewFile();
             } catch (IOException e)
@@ -108,14 +107,11 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         FileInputStream fis;
         try {
-            Log.w(TAG, "Position 3");
             ArrayList<ScannedCard> savedCards;
             fis = openFileInput(FILENAME);
             if(fis.available() > 0) {
-                Log.w(TAG, "Position 4");
                 ObjectInputStream ois = new ObjectInputStream(fis);
                 try {
-                    Log.w(TAG, "Position 5");
                     savedCards = (ArrayList<ScannedCard>)ois.readObject();
                     ois.close();
 
@@ -129,13 +125,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
                             AbstractBarcodeBean bean;
                             switch (card.getFormat())
                             {
-                                case 1:  // code 128
+                                case Barcode.CODE_128:  // code 128
                                     bean = new Code128Bean();
                                     break;
 
                                 default:
                                     Log.w(TAG, "Unrecognized card format. Aborting");
-                                    Log.w(TAG, "Format int: " + card.formatInt + ", format value: " + card.getformatValue());
+                                    Log.w(TAG, "Format int: " + card.formatInt);
                                     Log.w(TAG, "Value: " + card.value);
                                     return;
                             }
@@ -154,19 +150,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
                                 Bitmap bitmap = canvas.getBitmap();
 
-
                                 // scale it to 3x
                                 Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth() * 5, bitmap.getHeight() * 5, false);
-
-//                                ImageView iView = new ImageView(this);
-//                                iView.setImageBitmap(resizedBitmap);
-//
-//                                cLayout.addView(iView);
-//
-//                                TextView tView = new TextView(this);
-//                                tView.setText(card.name + ": " + card.value);
-//
-//                                cLayout.addView(tView);
 
                                 CardView cView = (CardView) getLayoutInflater().inflate(R.layout.barcode_view, linearLayout, false);
 
@@ -244,62 +229,38 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     statusMessage.setText(R.string.barcode_success);
                     barcodeValue.setText(barcode.rawValue);
 
-                    //Deserialize the card format list
-                    CardFormatParser parser = new CardFormatParser();
-                    InputStream XmlFileInputStream = getResources().openRawResource(R.raw.cardformats); // getting XML
-                    try {
-                        //the type of value stored in barcode (e.g. alphanumeric, numeric, alpha-only)
-                        ValueTypeEnum valueType;
-                        try{
-                            Long.parseLong(barcode.displayValue); //*WARNING* This cannot hold raw value greater than 2^63-1
-                            //value is an integer
-                            valueType = ValueTypeEnum.NUMERIC;
-                        } catch (NumberFormatException e){
-                            //value is not an integer
-                            //so check to see if it contains any integers amongst the letters
-                            e.printStackTrace();
-                            if(barcode.displayValue.matches(".*\\d+.*")){
-                                valueType = ValueTypeEnum.ALPHANUMERIC;
-                            } else {
-                                valueType = ValueTypeEnum.ALPHA;
-                            }
-                        }
 
-                        Log.d(TAG, "Value Type: " + valueType);
-
-                        //go through the list of possible formats and return the first one that matches
-                        final CardFormat matchedFormat = parser.findInJsonStream(XmlFileInputStream, valueType, barcode.displayValue.length());
-
-                        if(matchedFormat != null){
 
                             // 1. Instantiate an AlertDialog.Builder with its constructor
                             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                            builder.setTitle("New Card");
+
+                            final EditText input = new EditText(this);
+                            input.setInputType(InputType.TYPE_CLASS_TEXT);
+
+                            builder.setView(input);
 
                             // 2. Chain together various setter methods to set the dialog characteristics
-                            String completeMessage = String.format("Is this a %s?", matchedFormat.name);
+                            String completeMessage = String.format("What would you like to name this card?");
                             builder.setMessage(completeMessage)
                                     .setTitle(R.string.match_found);
 
                             // Add the buttons
-                            builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                            builder.setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int id) {
                                     // User clicked OK button
                                     // Add gift card to inventory
-                                    ScannedCard scannedCard = new ScannedCard(matchedFormat, barcode.displayValue);
+                                    ScannedCard scannedCard = new ScannedCard(input.getText().toString(), barcode.format, barcode.rawValue.length(), barcode.rawValue);
 
                                     FileOutputStream fos;
                                     FileInputStream fis;
-                                    Log.w(TAG, "Position 5");
                                     ArrayList<ScannedCard> scannedCards = new ArrayList<ScannedCard>();
                                     try {
                                         fis = new FileInputStream(file);
-                                        Log.w(TAG, "Position 6");
                                         if(fis.available() > 0) {
-                                            Log.w(TAG, "Position 7");
                                             ObjectInputStream ois = new ObjectInputStream(fis);
                                             try {
                                                 scannedCards = (ArrayList<ScannedCard>)ois.readObject();
-                                                Log.w(TAG, "Position 8");
                                                 scannedCards.add(scannedCard);
 
                                             } catch (ClassNotFoundException e) {
@@ -317,8 +278,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                         out.close();
                                         fos.close();
 
-                                        Log.w(TAG, "Position 9");
-
                                         //tell the user it was successfully saved
                                         Context context = getApplicationContext();
                                         CharSequence text = "Card Successfully Saved";
@@ -333,7 +292,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
                                 }
                             });
-                            builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                            builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int id) {
                                     // User cancelled the dialog
                                     // Maybe present user with list of options?
@@ -343,30 +302,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
                             // 3. Get the AlertDialog from create()
                             AlertDialog dialog = builder.create();
                             dialog.show();
-                        } else {
-                            Log.d(TAG, "No matching format found.");
 
-                            // 1. Instantiate an AlertDialog.Builder with its constructor
-                            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-
-                            // 2. Chain together various setter methods to set the dialog characteristics
-                            builder.setMessage(R.string.no_match)
-                                    .setTitle(R.string.error);
-
-                            // Add the buttons
-                            builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    // User clicked OK button
-                                }
-                            });
-
-                            // 3. Get the AlertDialog from create()
-                            AlertDialog dialog = builder.create();
-                            dialog.show();
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
 
                     Log.d(TAG, "Barcode read: " + barcode.displayValue);
                     Log.d(TAG, "Barcode raw value: " + barcode.rawValue);

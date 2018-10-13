@@ -16,6 +16,8 @@
     <string name="match_found">Card Successfully Detected</string>
     <string name="no_match">No match was found, please scan again.</string>
     <string name="status_message">Status message @todo - replace this.</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
 </resources>

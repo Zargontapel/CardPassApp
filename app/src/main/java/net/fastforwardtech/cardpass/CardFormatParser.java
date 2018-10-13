@@ -80,8 +80,8 @@ class CardFormatParser {
             }
         }
         reader.endObject();
-        CardFormat parsedFormat = new CardFormat(formatName, id, formatValue, selfValueType, valueLength);
-        if(parsedFormat.valueType.equals(valueType) && parsedFormat.length == length) {
+        CardFormat parsedFormat = new CardFormat(formatName, id, valueLength);
+        if(/*parsedFormat.valueType.equals(valueType) && */parsedFormat.length == length) {
             return parsedFormat;
         }
         return null;
@@ -112,6 +112,6 @@ class CardFormatParser {
             }
         }
         reader.endObject();
-        return new CardFormat(formatName, id, formatValue, valueType, valueLength);
+        return new CardFormat(formatName, id/*, formatValue, valueType*/, valueLength);
     }
 }

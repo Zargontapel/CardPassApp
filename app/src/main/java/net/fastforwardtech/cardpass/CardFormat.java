@@ -10,15 +10,11 @@ public class CardFormat implements Serializable {
 
     public String name;
     public int formatInt;
-    public String formatValue;
-    public ValueTypeEnum valueType;
     public int length;
 
-    public CardFormat(String name, int formatInt, String formatValue, ValueTypeEnum valueType, int length){
+    public CardFormat(String name, int formatInt, int length){
         this.name = name;
         this.formatInt = formatInt;
-        this.formatValue = formatValue;
-        this.valueType = valueType;
         this.length = length;
     }
 

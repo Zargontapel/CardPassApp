@@ -34,6 +34,7 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -78,10 +79,9 @@ import org.krysalis.barcode4j.tools.UnitConv;
 public class MainActivity extends Activity implements View.OnClickListener {
 
     private CompoundButton useFlash;
-    private TextView statusMessage;
-    private TextView barcodeValue;
     private File file;
     private LinearLayout linearLayout;
+    private ScrollView scrollView;
 
     private static final int RC_BARCODE_CAPTURE = 9001;
     private static final String TAG = "BarcodeMain";
@@ -91,8 +91,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        statusMessage = (TextView)findViewById(R.id.status_message);
-        barcodeValue = (TextView)findViewById(R.id.barcode_value);
+        scrollView = findViewById(R.id.scroll_view);
+
+        scrollView.setScrollIndicators(View.SCROLL_INDICATOR_RIGHT, View.SCROLL_INDICATOR_RIGHT);
 
         useFlash = (CompoundButton) findViewById(R.id.use_flash);
 
@@ -127,98 +128,102 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     {
                         ScannedCard card = savedCards.get(i);
 
-                        try {
-
-                            AbstractBarcodeBean bean;
-                            switch (card.getFormat())
-                            {
-                                case Barcode.CODE_128:  // code 128
-                                    bean = new Code128Bean();
-                                    break;
-
-                                case Barcode.CODABAR:
-                                    bean = new CodabarBean();
-                                    break;
-
-                                case Barcode.CODE_39:
-                                    bean = new Code39Bean();
-                                    break;
-
-                                case Barcode.DATA_MATRIX:
-                                    bean = new DataMatrixBean();
-                                    break;
-
-                                case Barcode.EAN_13:
-                                    bean = new EAN13Bean();
-                                    break;
-
-                                case Barcode.EAN_8:
-                                    bean = new EAN8Bean();
-                                    break;
-
-                                case Barcode.ITF:
-                                    bean = new Interleaved2Of5Bean();
-                                    break;
-
-                                case Barcode.PDF417:
-                                    bean = new PDF417Bean();
-                                    break;
-
-                                case Barcode.UPC_A:
-                                    bean = new UPCABean();
-                                    break;
-
-                                case Barcode.UPC_E:
-                                    bean = new UPCEBean();
-                                    break;
-
-                                default:
-                                    Log.w(TAG, "Unrecognized card format. Aborting");
-                                    Log.w(TAG, "Format int: " + card.formatInt);
-                                    Log.w(TAG, "Value: " + card.value);
-                                    return;
-                            }
-
-                            final int dpi = 200;
-
-
-                            // Configure the barcode generator
-                            bean.setModuleWidth(UnitConv.in2mm(8.0f / dpi));  // makes a dot/module exactly eight pixels
-                            bean.doQuietZone(false);
-
-                            try {
-                                AndroidCanvasProvider canvas = new AndroidCanvasProvider();
-
-                                bean.generateBarcode(canvas, card.getValue());
-
-                                Bitmap bitmap = canvas.getBitmap();
-
-                                // scale it to 3x
-                                Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth() * 5, bitmap.getHeight() * 5, false);
-
-                                CardView cView = (CardView) getLayoutInflater().inflate(R.layout.barcode_view, linearLayout, false);
-
-                                ImageView iView = cView.findViewById(R.id.card_image);
-
-                                iView.setImageBitmap(resizedBitmap);
-
-                                TextView tView = cView.findViewById(R.id.card_text);
-
-                                tView.setText(card.name + ": " + card.value);
-
-                                linearLayout.addView(cView);
-
-                                } finally {
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        addBarcodeDisplay(card);
                     }
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
                 }
             }
         } catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    private void addBarcodeDisplay(ScannedCard card){
+        try {
+
+            AbstractBarcodeBean bean;
+            switch (card.getFormat())
+            {
+                case Barcode.CODE_128:  // code 128
+                    bean = new Code128Bean();
+                    break;
+
+                case Barcode.CODABAR:
+                    bean = new CodabarBean();
+                    break;
+
+                case Barcode.CODE_39:
+                    bean = new Code39Bean();
+                    break;
+
+                case Barcode.DATA_MATRIX:
+                    bean = new DataMatrixBean();
+                    break;
+
+                case Barcode.EAN_13:
+                    bean = new EAN13Bean();
+                    break;
+
+                case Barcode.EAN_8:
+                    bean = new EAN8Bean();
+                    break;
+
+                case Barcode.ITF:
+                    bean = new Interleaved2Of5Bean();
+                    break;
+
+                case Barcode.PDF417:
+                    bean = new PDF417Bean();
+                    break;
+
+                case Barcode.UPC_A:
+                    bean = new UPCABean();
+                    break;
+
+                case Barcode.UPC_E:
+                    bean = new UPCEBean();
+                    break;
+
+                default:
+                    Log.w(TAG, "Unrecognized card format. Aborting");
+                    Log.w(TAG, "Format int: " + card.formatInt);
+                    Log.w(TAG, "Value: " + card.value);
+                    return;
+            }
+
+            final int dpi = 200;
+
+
+            // Configure the barcode generator
+            bean.setModuleWidth(UnitConv.in2mm(8.0f / dpi));  // makes a dot/module exactly eight pixels
+            bean.doQuietZone(false);
+
+            try {
+                AndroidCanvasProvider canvas = new AndroidCanvasProvider();
+
+                bean.generateBarcode(canvas, card.getValue());
+
+                Bitmap bitmap = canvas.getBitmap();
+
+                // scale it to 3x
+                Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth() * 5, bitmap.getHeight() * 5, false);
+
+                CardView cView = (CardView) getLayoutInflater().inflate(R.layout.barcode_view, linearLayout, false);
+
+                ImageView iView = cView.findViewById(R.id.card_image);
+
+                iView.setImageBitmap(resizedBitmap);
+
+                TextView tView = cView.findViewById(R.id.card_text);
+
+                tView.setText(card.name + ": " + card.value);
+
+                linearLayout.addView(cView);
+
+            } finally {
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -269,10 +274,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
             if (resultCode == CommonStatusCodes.SUCCESS) {
                 if (data != null) {
                     final Barcode barcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
-                    statusMessage.setText(R.string.barcode_success);
-                    barcodeValue.setText(barcode.rawValue);
 
+                    //tell the user it was successfully saved
+                    Context context = getApplicationContext();
+                    CharSequence text = "Barcode read successfully";
+                    int duration = Toast.LENGTH_SHORT;
 
+                    Toast toast = Toast.makeText(context, text, duration);
+                    toast.show();
 
                             // 1. Instantiate an AlertDialog.Builder with its constructor
                             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
@@ -294,6 +303,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
                                     // User clicked OK button
                                     // Add gift card to inventory
                                     ScannedCard scannedCard = new ScannedCard(input.getText().toString(), barcode.format, barcode.rawValue.length(), barcode.rawValue);
+
+                                    addBarcodeDisplay(scannedCard);
 
                                     FileOutputStream fos;
                                     FileInputStream fis;
@@ -355,8 +366,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     Log.d(TAG, "No barcode captured, intent data is null");
                 }
             } else {
-                statusMessage.setText(String.format(getString(R.string.barcode_error),
-                        CommonStatusCodes.getStatusCodeString(resultCode)));
+                //tell the user it was successfully saved
+                Context context = getApplicationContext();
+                CharSequence text = String.format(getString(R.string.barcode_error), CommonStatusCodes.getStatusCodeString(resultCode));
+                int duration = Toast.LENGTH_SHORT;
+
+                Toast toast = Toast.makeText(context, text, duration);
+                toast.show();
             }
         }
         else {

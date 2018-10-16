@@ -73,7 +73,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private CompoundButton useFlash;
     private File file;
     private LinearLayout linearLayout;
-    private ScrollView scrollView;
 
     private static final int RC_BARCODE_CAPTURE = 9001;
     private static final String TAG = "BarcodeMain";
@@ -83,11 +82,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        scrollView = findViewById(R.id.scroll_view);
-
-        scrollView.setScrollIndicators(View.SCROLL_INDICATOR_RIGHT, View.SCROLL_INDICATOR_RIGHT);
-
         useFlash = (CompoundButton) findViewById(R.id.use_flash);
+
+        linearLayout = findViewById(R.id.barcode_cards);
 
         findViewById(R.id.read_barcode).setOnClickListener(this);
 
@@ -115,7 +112,6 @@ public class MainActivity extends Activity implements View.OnClickListener {
                     savedCards = (ArrayList<ScannedCard>)ois.readObject();
                     ois.close();
 
-                    linearLayout = findViewById(R.id.barcode_cards);
                     for(int i = 0; i < savedCards.size(); i++)
                     {
                         ScannedCard card = savedCards.get(i);

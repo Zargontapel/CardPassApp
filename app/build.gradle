@@ -1,14 +1,31 @@
 apply plugin: 'com.android.application'
 
 android {
+    allprojects {
+        afterEvaluate { project ->
+            def propsFile = rootProject.file('keystore.properties')
+            def configName = 'release'
+
+            if (propsFile.exists() && android.signingConfigs.hasProperty(configName)) {
+                def props = new Properties()
+                props.load(new FileInputStream(propsFile))
+                android.signingConfigs[configName].storeFile = file(props['storeFile'])
+                android.signingConfigs[configName].storePassword = props['storePassword']
+                android.signingConfigs[configName].keyAlias = props['keyAlias']
+                android.signingConfigs[configName].keyPassword = props['keyPassword']
+            }
+        }
+    }
+
     compileSdkVersion 28
     defaultConfig {
         applicationId "net.fastforwardtech.cardpass"
-        minSdkVersion 23
+        minSdkVersion 22
         targetSdkVersion 28
-        versionCode 2
+        versionCode 3
         versionName "1.0.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        signingConfig signingConfigs.debug
     }
     buildTypes {
         release {
@@ -16,6 +33,8 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             versionNameSuffix 'Alpha'
         }
+    }
+    productFlavors {
     }
 }
 

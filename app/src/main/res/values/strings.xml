@@ -20,4 +20,8 @@
     <string name="cancel">Cancel</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="admob_app_id">ca-app-pub-1936643429264954~2142952690</string>
+    <string name="test_ads_unit_id">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="real_ads_unit_id">ca-app-pub-1936643429264954/7160528975</string>
+    <string name="current_ad_unit_id">@string/test_ads_unit_id</string>
 </resources>
